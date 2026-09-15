@@ -4,156 +4,283 @@
 
 <div align="center">
 
-[![Tests](https://github.com/huggingface/lerobot/actions/workflows/nightly.yml/badge.svg?branch=main)](https://github.com/huggingface/lerobot/actions/workflows/nightly.yml?query=branch%3Amain)
-[![Python versions](https://img.shields.io/pypi/pyversions/lerobot)](https://www.python.org/downloads/)
-[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://github.com/huggingface/lerobot/blob/main/LICENSE)
-[![Status](https://img.shields.io/pypi/status/lerobot)](https://pypi.org/project/lerobot/)
-[![Version](https://img.shields.io/pypi/v/lerobot)](https://pypi.org/project/lerobot/)
-[![Contributor Covenant](https://img.shields.io/badge/Contributor%20Covenant-v2.1-ff69b4.svg)](https://github.com/huggingface/lerobot/blob/main/CODE_OF_CONDUCT.md)
-[![Discord](https://img.shields.io/badge/Discord-Join_Us-5865F2?style=flat&logo=discord&logoColor=white)](https://discord.gg/q8Dzzpym3f)
+# RIA LeRobot
+
+**Piper 실기**와 **Isaac Sim (ROS 2)** 으로 텔레옵 · 수집 · 학습까지
+
+`v0.4.4` &nbsp;·&nbsp; Python `≥ 3.10` &nbsp;·&nbsp; `can_number` / `camera_number` / `<USER>` 만 바꿔 쓰면 됩니다
 
 </div>
-
-**LeRobot** aims to provide models, datasets, and tools for real-world robotics in PyTorch. The goal is to lower the barrier to entry so that everyone can contribute to and benefit from shared datasets and pretrained models.
-
-🤗 A hardware-agnostic, Python-native interface that standardizes control across diverse platforms, from low-cost arms (SO-100) to humanoids.
-
-🤗 A standardized, scalable LeRobotDataset format (Parquet + MP4 or images) hosted on the Hugging Face Hub, enabling efficient storage, streaming and visualization of massive robotic datasets.
-
-🤗 State-of-the-art policies that have been shown to transfer to the real-world ready for training and deployment.
-
-🤗 Comprehensive support for the open-source ecosystem to democratize physical AI.
-
-## Quick Start
-
-LeRobot can be installed directly from PyPI.
-
-```bash
-pip install lerobot
-lerobot-info
-```
-
-> [!IMPORTANT]
-> For detailed installation guide, please see the [Installation Documentation](https://huggingface.co/docs/lerobot/installation).
-
-## Robots & Control
-
-<div align="center">
-  <img src="./media/readme/robots_control_video.webp" width="640px" alt="Reachy 2 Demo">
-</div>
-
-LeRobot provides a unified `Robot` class interface that decouples control logic from hardware specifics. It supports a wide range of robots and teleoperation devices.
-
-```python
-from lerobot.robots.myrobot import MyRobot
-
-# Connect to a robot
-robot = MyRobot(config=...)
-robot.connect()
-
-# Read observation and send action
-obs = robot.get_observation()
-action = model.select_action(obs)
-robot.send_action(action)
-```
-
-**Supported Hardware:** SO100, LeKiwi, Koch, HopeJR, OMX, EarthRover, Reachy2, Gamepads, Keyboards, Phones, OpenARM, Unitree G1.
-
-While these devices are natively integrated into the LeRobot codebase, the library is designed to be extensible. You can easily implement the Robot interface to utilize LeRobot's data collection, training, and visualization tools for your own custom robot.
-
-For detailed hardware setup guides, see the [Hardware Documentation](https://huggingface.co/docs/lerobot/integrate_hardware).
-
-## LeRobot Dataset
-
-To solve the data fragmentation problem in robotics, we utilize the **LeRobotDataset** format.
-
-- **Structure:** Synchronized MP4 videos (or images) for vision and Parquet files for state/action data.
-- **HF Hub Integration:** Explore thousands of robotics datasets on the [Hugging Face Hub](https://huggingface.co/lerobot).
-- **Tools:** Seamlessly delete episodes, split by indices/fractions, add/remove features, and merge multiple datasets.
-
-```python
-from lerobot.datasets.lerobot_dataset import LeRobotDataset
-
-# Load a dataset from the Hub
-dataset = LeRobotDataset("lerobot/aloha_mobile_cabinet")
-
-# Access data (automatically handles video decoding)
-episode_index=0
-print(f"{dataset[episode_index]['action'].shape=}\n")
-```
-
-Learn more about it in the [LeRobotDataset Documentation](https://huggingface.co/docs/lerobot/lerobot-dataset-v3)
-
-## SoTA Models
-
-LeRobot implements state-of-the-art policies in pure PyTorch, covering Imitation Learning, Reinforcement Learning, and Vision-Language-Action (VLA) models, with more coming soon. It also provides you with the tools to instrument and inspect your training process.
 
 <p align="center">
-  <img alt="Gr00t Architecture" src="./media/readme/VLA_architecture.jpg" width="640px">
+  <img src="./media/readme/robots_control_video.webp" width="720" alt="LeRobot robot control demo">
 </p>
 
-Training a policy is as simple as running a script configuration:
+<p align="center">
+  <img src="./media/readme/lerobot-workflow.png" width="820" alt="Teleoperate, Record, Train, Evaluate">
+</p>
+
+<p align="center">
+  <a href="#설치">설치</a> ·
+  <a href="#piper-실기">Piper</a> ·
+  <a href="#isaac-sim-ros-2">Isaac</a> ·
+  <a href="#데이터-시각화">시각화</a>
+</p>
+
+---
+
+## 설치
+
+```bash
+conda activate lerobot
+cd /path/to/RIA_lerobot
+pip install -e .
+pip install -e src/lerobot/robots/lerobot_robot_piper_follower
+pip install -e src/lerobot/teleoperators/lerobot_teleoperator_piper_leader
+pip install -e src/lerobot/robots/lerobot_robot_isaac_follower
+pip install -e src/lerobot/teleoperators/lerobot_teleoperator_isaac_leader
+```
+
+`--display_data=true` 를 켜면 Rerun 창에서 카메라와 조인트를 실시간으로 볼 수 있습니다.
+
+| 키 | 동작 |
+| :---: | --- |
+| `→` | 에피소드 종료 후 다음으로 |
+| `←` | 방금 에피소드 다시 녹화 |
+| `Esc` | 녹화 중단 |
+
+---
+
+## Piper (실기)
+
+<p align="center">
+  <img src="./media/readme/piper-teleop.png" width="720" alt="Piper leader and follower teleoperation">
+</p>
+
+CAN으로 리더/팔로워를 연결하고, OpenCV 카메라로 영상을 받습니다.  
+`can_number` 예: `can0`, `can1`. 카메라 번호는 먼저 찾습니다.
+
+```bash
+lerobot-find-cameras
+```
+
+### 텔레옵
+
+리더를 움직이면 팔로워가 따라 가고, Rerun에서 카메라/조인트를 확인합니다.
+
+```bash
+lerobot-teleoperate \
+  --robot.type=piper_follower \
+  --robot.port=can_number \
+  --teleop.type=piper_leader \
+  --teleop.port=can_number \
+  --robot.cameras="{ front: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}, top: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}}" \
+  --display_data=true
+```
+
+### 데이터 녹화
+
+텔레옵으로 에피소드를 저장합니다. Hub에 올리지 않으려면 `--dataset.push_to_hub=false` 를 유지합니다.
+
+```bash
+lerobot-record \
+  --robot.type=piper_follower \
+  --robot.port=can_number \
+  --teleop.type=piper_leader \
+  --teleop.port=can_number \
+  --robot.cameras="{ front: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}, top: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}}" \
+  --display_data=true \
+  --dataset.repo_id=<USER>/piper_dataset \
+  --dataset.single_task="Pick the cube and place it in the box" \
+  --dataset.num_episodes=50 \
+  --dataset.episode_time_s=60 \
+  --dataset.reset_time_s=10 \
+  --dataset.push_to_hub=false
+```
+
+<details>
+<summary><b>이어서 찍을 때</b></summary>
+
+```bash
+lerobot-record \
+  --robot.type=piper_follower \
+  --robot.port=can_number \
+  --teleop.type=piper_leader \
+  --teleop.port=can_number \
+  --robot.cameras="{ front: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}, top: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}}" \
+  --display_data=true \
+  --dataset.repo_id=<USER>/piper_dataset \
+  --dataset.single_task="Pick the cube and place it in the box" \
+  --dataset.num_episodes=10 \
+  --resume=true \
+  --dataset.push_to_hub=false
+```
+
+</details>
+
+### 에피소드 리플레이
+
+저장된 액션을 팔로워에 다시 보냅니다.
+
+```bash
+lerobot-replay \
+  --robot.type=piper_follower \
+  --robot.port=can_number \
+  --dataset.repo_id=<USER>/piper_dataset \
+  --dataset.episode=0
+```
+
+### 학습
 
 ```bash
 lerobot-train \
-  --policy=act \
-  --dataset.repo_id=lerobot/aloha_mobile_cabinet
+  --dataset.repo_id=<USER>/piper_dataset \
+  --policy.type=act \
+  --output_dir=outputs/train/act_piper \
+  --job_name=act_piper \
+  --policy.device=cuda \
+  --wandb.enable=false
 ```
 
-| Category                   | Models                                                                                                                                                                                                       |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Imitation Learning**     | [ACT](./docs/source/policy_act_README.md), [Diffusion](./docs/source/policy_diffusion_README.md), [VQ-BeT](./docs/source/policy_vqbet_README.md)                                                             |
-| **Reinforcement Learning** | [HIL-SERL](./docs/source/hilserl.mdx), [TDMPC](./docs/source/policy_tdmpc_README.md) & QC-FQL (coming soon)                                                                                                  |
-| **VLAs Models**            | [Pi0Fast](./docs/source/pi0fast.mdx), [Pi0.5](./docs/source/pi05.mdx), [GR00T N1.5](./docs/source/policy_groot_README.md), [SmolVLA](./docs/source/policy_smolvla_README.md), [XVLA](./docs/source/xvla.mdx) |
+### 정책으로 평가 녹화
 
-Similarly to the hardware, you can easily implement your own policy & leverage LeRobot's data collection, training, and visualization tools, and share your model to the HF Hub
-
-For detailed policy setup guides, see the [Policy Documentation](https://huggingface.co/docs/lerobot/bring_your_own_policies).
-
-## Inference & Evaluation
-
-Evaluate your policies in simulation or on real hardware using the unified evaluation script. LeRobot supports standard benchmarks like **LIBERO**, **MetaWorld** and more to come.
+학습된 체크포인트로 실기를 돌리면서 평가 에피소드를 저장합니다.
 
 ```bash
-# Evaluate a policy on the LIBERO benchmark
-lerobot-eval \
-  --policy.path=lerobot/pi0_libero_finetuned \
-  --env.type=libero \
-  --env.task=libero_object \
-  --eval.n_episodes=10
+lerobot-record \
+  --robot.type=piper_follower \
+  --robot.port=can_number \
+  --robot.cameras="{ front: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}, top: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}}" \
+  --display_data=true \
+  --dataset.repo_id=<USER>/eval_piper \
+  --dataset.single_task="Pick the cube and place it in the box" \
+  --dataset.num_episodes=10 \
+  --dataset.push_to_hub=false \
+  --policy.path=outputs/train/act_piper/checkpoints/last/pretrained_model
 ```
 
-Learn how to implement your own simulation environment or benchmark and distribute it from the HF Hub by following the [EnvHub Documentation](https://huggingface.co/docs/lerobot/envhub)
+---
 
-## Resources
-
-- **[Documentation](https://huggingface.co/docs/lerobot/index):** The complete guide to tutorials & API.
-- **[Chinese Tutorials: LeRobot+SO-ARM101中文教程-同济子豪兄](https://zihao-ai.feishu.cn/wiki/space/7589642043471924447)** Detailed doc for assembling, teleoperate, dataset, train, deploy. Verified by Seed Studio and 5 global hackathon players.
-- **[Discord](https://discord.gg/q8Dzzpym3f):** Join the `LeRobot` server to discuss with the community.
-- **[X](https://x.com/LeRobotHF):** Follow us on X to stay up-to-date with the latest developments.
-- **[Robot Learning Tutorial](https://huggingface.co/spaces/lerobot/robot-learning-tutorial):** A free, hands-on course to learn robot learning using LeRobot.
-
-## Citation
-
-If you use LeRobot in your research, please cite:
-
-```bibtex
-@misc{cadene2024lerobot,
-    author = {Cadene, Remi and Alibert, Simon and Soare, Alexander and Gallouedec, Quentin and Zouitine, Adil and Palma, Steven and Kooijmans, Pepijn and Aractingi, Michel and Shukor, Mustafa and Aubakirova, Dana and Russi, Martino and Capuano, Francesco and Pascal, Caroline and Choghari, Jade and Moss, Jess and Wolf, Thomas},
-    title = {LeRobot: State-of-the-art Machine Learning for Real-World Robotics in Pytorch},
-    howpublished = "\url{https://github.com/huggingface/lerobot}",
-    year = {2024}
-}
-```
-
-## Contribute
-
-We welcome contributions from everyone in the community! To get started, please read our [CONTRIBUTING.md](./CONTRIBUTING.md) guide. Whether you're adding a new feature, improving documentation, or fixing a bug, your help and feedback are invaluable. We're incredibly excited about the future of open-source robotics and can't wait to work with you on what's next—thank you for your support!
+## Isaac Sim (ROS 2)
 
 <p align="center">
-  <img alt="SO101 Video" src="./media/readme/so100_video.webp" width="640px">
+  <img src="./media/readme/isaac-sim.png" width="720" alt="Isaac Sim follower and leader with ROS 2 cameras">
 </p>
 
-<div align="center">
-<sub>Built by the <a href="https://huggingface.co/lerobot">LeRobot</a> team at <a href="https://huggingface.co">Hugging Face</a> with ❤️</sub>
-</div>
+Isaac 쪽 카메라와 조인트는 OpenCV / `--robot.port` 가 아니라 **ROS 2 토픽**으로 들어옵니다.  
+토픽 이름은 아래 파일 상단에서만 바꿉니다.
+
+- `src/lerobot/robots/lerobot_robot_isaac_follower/lerobot_robot_isaac_follower/topics.py`
+- `src/lerobot/teleoperators/lerobot_teleoperator_isaac_leader/lerobot_teleoperator_isaac_leader/topics.py`
+
+실행 전에 ROS 2를 source 하고, Isaac Sim에서 아래 토픽이 나와야 합니다.
+
+```bash
+source /opt/ros/<distro>/setup.bash
+```
+
+| 역할 | 토픽 |
+| --- | --- |
+| follower 조인트 | `/isaac/follower/joint_states` |
+| follower 명령 | `/isaac/follower/joint_command` |
+| 카메라 `front` / `wrist` | `/isaac/follower/front/rgb`, `/isaac/follower/wrist/rgb` |
+| leader 조인트 | `/isaac/leader/joint_states` |
+
+### 텔레옵
+
+Isaac 리더를 움직이면 팔로워가 따라 갑니다. 카메라는 토픽에서 자동으로 붙습니다.
+
+```bash
+lerobot-teleoperate \
+  --robot.type=isaac_follower \
+  --teleop.type=isaac_leader \
+  --display_data=true
+```
+
+### 데이터 녹화
+
+```bash
+lerobot-record \
+  --robot.type=isaac_follower \
+  --teleop.type=isaac_leader \
+  --display_data=true \
+  --dataset.repo_id=<USER>/isaac_dataset \
+  --dataset.single_task="Pick the cube and place it in the box" \
+  --dataset.num_episodes=50 \
+  --dataset.episode_time_s=60 \
+  --dataset.reset_time_s=10 \
+  --dataset.push_to_hub=false
+```
+
+<details>
+<summary><b>Isaac이 에피소드 종료/리셋을 토픽으로 알려 주는 수집 모드</b></summary>
+
+```bash
+ISAAC_COLLECT=1 lerobot-record \
+  --robot.type=isaac_follower \
+  --teleop.type=isaac_leader \
+  --display_data=true \
+  --dataset.repo_id=<USER>/isaac_dataset \
+  --dataset.single_task="Pick the cube and place it in the box" \
+  --dataset.num_episodes=50 \
+  --dataset.push_to_hub=false
+```
+
+관련 토픽: `/isaac/env/reset`, `/isaac/env/reset_request`, `/isaac/env/episode_end`, `/isaac/env/episode_start`
+
+</details>
+
+### 에피소드 리플레이
+
+```bash
+lerobot-replay \
+  --robot.type=isaac_follower \
+  --dataset.repo_id=<USER>/isaac_dataset \
+  --dataset.episode=0
+```
+
+### 학습
+
+```bash
+lerobot-train \
+  --dataset.repo_id=<USER>/isaac_dataset \
+  --policy.type=act \
+  --output_dir=outputs/train/act_isaac \
+  --job_name=act_isaac \
+  --policy.device=cuda \
+  --wandb.enable=false
+```
+
+### 정책으로 평가 녹화
+
+Isaac에서 학습한 모델은 같은 `isaac_follower` 카메라 키(`front`, `wrist`)와 조인트 단위로 평가해야 합니다.  
+실기 Piper 체크포인트를 Isaac에, 또는 그 반대로 그대로 넣으면 입력이 맞지 않습니다.
+
+```bash
+lerobot-record \
+  --robot.type=isaac_follower \
+  --display_data=true \
+  --dataset.repo_id=<USER>/eval_isaac \
+  --dataset.single_task="Pick the cube and place it in the box" \
+  --dataset.num_episodes=10 \
+  --dataset.push_to_hub=false \
+  --policy.path=outputs/train/act_isaac/checkpoints/last/pretrained_model
+```
+
+---
+
+## 데이터 시각화
+
+로컬에 저장된 에피소드를 Rerun으로 재생합니다.
+
+```bash
+# Piper
+lerobot-dataset-viz \
+  --repo-id <USER>/piper_dataset \
+  --episode-index 0
+
+# Isaac
+lerobot-dataset-viz \
+  --repo-id <USER>/isaac_dataset \
+  --episode-index 0
+```
