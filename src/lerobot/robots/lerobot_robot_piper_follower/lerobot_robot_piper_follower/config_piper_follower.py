@@ -1,8 +1,7 @@
-from dataclasses import dataclass,field
+from dataclasses import dataclass, field
 
 from lerobot.cameras import CameraConfig
-
-from ...config import RobotConfig
+from lerobot.robots.config import RobotConfig
 
 @RobotConfig.register_subclass("piper_follower")
 @dataclass

@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 import logging
 from functools import cached_property
 
@@ -64,11 +66,22 @@ class IsaacFollower(Robot):
         pass
 
     def _patch_record_keyboard(self) -> None:
+        modules = []
         try:
             import lerobot.scripts.lerobot_record as record_mod
+
+            modules.append(record_mod)
         except ImportError:
-            return
-        orig = getattr(record_mod, "init_keyboard_listener", None)
+            pass
+        try:
+            import lerobot.utils.control_utils as control_mod
+
+            modules.append(control_mod)
+        except ImportError:
+            pass
+        orig = None
+        for mod in modules:
+            orig = getattr(mod, "init_keyboard_listener", orig)
         if orig is None or getattr(orig, "_isaac_patched", False):
             return
         bridge = self._bridge
@@ -79,7 +92,9 @@ class IsaacFollower(Robot):
             return listener, events
 
         wrapped._isaac_patched = True
-        record_mod.init_keyboard_listener = wrapped
+        for mod in modules:
+            if hasattr(mod, "init_keyboard_listener"):
+                mod.init_keyboard_listener = wrapped
 
     @check_if_not_connected
     def get_observation(self) -> RobotObservation:

@@ -3,13 +3,11 @@ import time
 from functools import cached_property
 
 from lerobot.cameras.utils import make_cameras_from_configs
-
-from ...robot import Robot
-from ...utils import ensure_safe_goal_position
-from .config_piper_follower import PiperFollowerConfig
-
 from lerobot.processor import RobotAction, RobotObservation
+from lerobot.robots.robot import Robot
 from lerobot.utils.decorators import check_if_already_connected, check_if_not_connected
+
+from .config_piper_follower import PiperFollowerConfig
 
 from piper_sdk import *
 from piper_sdk.interface.piper_interface_v2 import C_PiperInterface_V2
@@ -86,7 +84,7 @@ class PiperFollower(Robot):
             "gripper": float,
         }
     
-    def connect(self) -> None:
+    def connect(self, calibrate: bool = True) -> None:
         self.piper.ConnectPort()
         time.sleep(0.025)
         self._is_connected = True # 연결 확인 시 true로 변경
@@ -164,6 +162,7 @@ class PiperFollower(Robot):
         print("Configuring Piper Follower...")
         pass
 
+    @property
     def is_connected(self) -> bool:
         """
         로봇이 현재 연결되어 있는지 확인합니다.
@@ -176,8 +175,8 @@ class PiperFollower(Robot):
         Piper는 자체 엔코더를 사용하므로 패스합니다.
         """
         print("Piper Follower: No manual calibration needed.")
-        pass
 
+    @property
     def is_calibrated(self) -> bool:
         """
         캘리브레이션 완료 여부를 반환합니다.

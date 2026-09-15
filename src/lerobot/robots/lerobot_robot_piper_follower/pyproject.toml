@@ -1,5 +1,5 @@
 [project]
-name = "lerobot-robot-piper-follower"
+name = "lerobot_robot_piper_follower"
 version = "0.1.0"
 description = "Piper follower robot for LeRobot"
 dependencies = [

@@ -1,11 +1,15 @@
 import logging
 import time
 
-from ...teleoperator import Teleoperator
+from typing import Any
+
 from piper_sdk import *
 from piper_sdk.interface.piper_interface_v2 import C_PiperInterface_V2
-from .config_piper_leader import PiperLeaderConfig
+
+from lerobot.teleoperators.teleoperator import Teleoperator
 from lerobot.utils.decorators import check_if_already_connected, check_if_not_connected
+
+from .config_piper_leader import PiperLeaderConfig
 
 
 logger = logging.getLogger(__name__)
@@ -58,11 +62,11 @@ class PiperLeader(Teleoperator):
         }
         return action
     
-    def send_feedback(self) -> None:
-        pass  
+    def send_feedback(self, feedback: dict[str, Any]) -> None:
+        pass
 
-    @check_if_already_connected  
-    def connect(self) -> None:
+    @check_if_already_connected
+    def connect(self, calibrate: bool = True) -> None:
         self.piper.ConnectPort()
         time.sleep(0.025)
         self._is_connected = True 
@@ -86,8 +90,8 @@ class PiperLeader(Teleoperator):
         Piper는 자체 엔코더를 사용하므로 별도 캘리브레이션 과정이 필요 없다면 pass 합니다.
         """
         print("Piper Leader: No manual calibration needed.")
-        pass
 
+    @property
     def is_calibrated(self) -> bool:
         """
         캘리브레이션 완료 여부를 반환합니다.
