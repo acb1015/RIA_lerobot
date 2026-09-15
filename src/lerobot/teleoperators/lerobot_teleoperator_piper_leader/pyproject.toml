@@ -1,0 +1,15 @@
+[project]
+name = "lerobot-teleoperator-piper-leader"
+version = "0.1.0"
+description = "Piper Leader teleoperator for LeRobot"
+dependencies = [
+    "lerobot>=0.4.0",
+    "piper-sdk>=0.1.14",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.entry-points."lerobot.teleoperators"]
+PiperLeaderConfig = "lerobot_teleoperator_piper_leader.config_piper_leader:PiperLeaderConfig"

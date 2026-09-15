@@ -1,0 +1,15 @@
+[project]
+name = "lerobot-robot-piper-follower"
+version = "0.1.0"
+description = "Piper follower robot for LeRobot"
+dependencies = [
+    "lerobot>=0.4.0",
+    "piper-sdk>=0.1.14",
+]
+
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project.entry-points."lerobot.robot"]
+PiperFollowerConfig = "lerobot_robot_piper_follower.config_piper_follower:PiperFollowerConfig"
