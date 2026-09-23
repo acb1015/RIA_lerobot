@@ -27,6 +27,26 @@
   <a href="#데이터-시각화">시각화</a>
 </p>
 
+<p align="center">
+  Piper:
+  <a href="#piper-텔레옵">텔레옵</a> ·
+  <a href="#piper-데이터-녹화">녹화</a> ·
+  <a href="#piper-에피소드-리플레이">리플레이</a> ·
+  <a href="#piper-학습">학습</a> ·
+  <a href="#piper-평가">평가</a> ·
+  <a href="#piper-평가-녹화">평가 녹화</a>
+</p>
+
+<p align="center">
+  Isaac:
+  <a href="#isaac-텔레옵">텔레옵</a> ·
+  <a href="#isaac-데이터-녹화">녹화</a> ·
+  <a href="#isaac-에피소드-리플레이">리플레이</a> ·
+  <a href="#isaac-학습">학습</a> ·
+  <a href="#isaac-평가">평가</a> ·
+  <a href="#isaac-평가-녹화">평가 녹화</a>
+</p>
+
 ---
 
 ## 설치
@@ -159,7 +179,16 @@ CAN으로 리더/팔로워를 연결하고, OpenCV 카메라로 영상을 받습
 lerobot-find-cameras
 ```
 
-### 텔레옵
+<p align="center">
+  <a href="#piper-텔레옵">텔레옵</a> ·
+  <a href="#piper-데이터-녹화">녹화</a> ·
+  <a href="#piper-에피소드-리플레이">리플레이</a> ·
+  <a href="#piper-학습">학습</a> ·
+  <a href="#piper-평가">평가</a> ·
+  <a href="#piper-평가-녹화">평가 녹화</a>
+</p>
+
+### Piper 텔레옵
 
 리더를 움직이면 팔로워가 따라 가고, Rerun에서 카메라/조인트를 확인합니다.
 
@@ -173,7 +202,7 @@ lerobot-teleoperate \
   --display_data=true
 ```
 
-### 데이터 녹화
+### Piper 데이터 녹화
 
 텔레옵으로 에피소드를 저장합니다. Hub에 올리지 않으려면 `--dataset.push_to_hub=false` 를 유지합니다.
 
@@ -213,7 +242,7 @@ lerobot-record \
 
 </details>
 
-### 에피소드 리플레이
+### Piper 에피소드 리플레이
 
 저장된 액션을 팔로워에 다시 보냅니다.
 
@@ -225,7 +254,7 @@ lerobot-replay \
   --dataset.episode=0
 ```
 
-### 학습
+### Piper 학습
 
 ```bash
 lerobot-train \
@@ -237,30 +266,13 @@ lerobot-train \
   --wandb.enable=false
 ```
 
-### 정책으로 평가 녹화
+### Piper 평가
 
-학습된 체크포인트로 실기를 돌리면서 평가 에피소드를 저장합니다.
-
-```bash
-lerobot-record \
-  --robot.type=piper_follower \
-  --robot.port=can_number \
-  --robot.cameras="{ front: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}, top: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}}" \
-  --display_data=true \
-  --dataset.repo_id=<USER>/eval_piper \
-  --dataset.single_task="Pick the cube and place it in the box" \
-  --dataset.num_episodes=10 \
-  --dataset.push_to_hub=false \
-  --policy.path=outputs/train/act_piper/checkpoints/last/pretrained_model
-```
-
-### 정책만 평가 (데이터 저장 없음)
-
-학습된 체크포인트로 실기를 돌리기만 하고, 에피소드 파일은 만들지 않습니다.  
+학습된 체크포인트로 실기만 돌립니다. 에피소드 파일은 만들지 않습니다.  
 시작은 **일시정지**입니다. 장면을 맞춘 뒤 Space로 정책을 시작하고, 다시 Space로 멈춥니다.
 
 | 키 | 동작 |
-| --- | --- |
+| :---: | --- |
 | Space | 일시정지 ↔ 재개 (재개 시 정책 액션 큐를 리셋) |
 | Esc / Ctrl+C | 종료 |
 
@@ -278,6 +290,23 @@ lerobot-evaluate \
 
 바로 움직이게 하려면 `--start_paused=false` 를 붙입니다.  
 카메라가 `Timed out waiting for frame` 로 끊기면 각 카메라에 `fourcc: MJPG` 를 넣습니다.
+
+### Piper 평가 녹화
+
+학습된 체크포인트로 실기를 돌리면서 평가 에피소드를 저장합니다.
+
+```bash
+lerobot-record \
+  --robot.type=piper_follower \
+  --robot.port=can_number \
+  --robot.cameras="{ front: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}, top: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}}" \
+  --display_data=true \
+  --dataset.repo_id=<USER>/eval_piper \
+  --dataset.single_task="Pick the cube and place it in the box" \
+  --dataset.num_episodes=10 \
+  --dataset.push_to_hub=false \
+  --policy.path=outputs/train/act_piper/checkpoints/last/pretrained_model
+```
 
 ---
 
@@ -306,7 +335,16 @@ source /opt/ros/<distro>/setup.bash
 | 카메라 `front` / `wrist` | `/isaac/follower/front/rgb`, `/isaac/follower/wrist/rgb` |
 | leader 조인트 | `/isaac/leader/joint_states` |
 
-### 텔레옵
+<p align="center">
+  <a href="#isaac-텔레옵">텔레옵</a> ·
+  <a href="#isaac-데이터-녹화">녹화</a> ·
+  <a href="#isaac-에피소드-리플레이">리플레이</a> ·
+  <a href="#isaac-학습">학습</a> ·
+  <a href="#isaac-평가">평가</a> ·
+  <a href="#isaac-평가-녹화">평가 녹화</a>
+</p>
+
+### Isaac 텔레옵
 
 Isaac 리더를 움직이면 팔로워가 따라 갑니다. 카메라는 토픽에서 자동으로 붙습니다.
 
@@ -317,7 +355,7 @@ lerobot-teleoperate \
   --display_data=true
 ```
 
-### 데이터 녹화
+### Isaac 데이터 녹화
 
 ```bash
 lerobot-record \
@@ -350,7 +388,7 @@ ISAAC_COLLECT=1 lerobot-record \
 
 </details>
 
-### 에피소드 리플레이
+### Isaac 에피소드 리플레이
 
 ```bash
 lerobot-replay \
@@ -359,7 +397,7 @@ lerobot-replay \
   --dataset.episode=0
 ```
 
-### 학습
+### Isaac 학습
 
 ```bash
 lerobot-train \
@@ -371,10 +409,24 @@ lerobot-train \
   --wandb.enable=false
 ```
 
-### 정책으로 평가 녹화
+### Isaac 평가
+
+Isaac에서도 `lerobot-evaluate` 로 데이터 없이 정책만 돌립니다. 조작은 [Piper 평가](#piper-평가)와 같습니다 (Space 일시정지/재개, Esc 종료).
 
 Isaac에서 학습한 모델은 같은 `isaac_follower` 카메라 키(`front`, `wrist`)와 조인트 단위로 평가해야 합니다.  
 실기 Piper 체크포인트를 Isaac에, 또는 그 반대로 그대로 넣으면 입력이 맞지 않습니다.
+
+```bash
+lerobot-evaluate \
+  --robot.type=isaac_follower \
+  --display_data=true \
+  --task="Pick the cube and place it in the box" \
+  --policy.path=outputs/train/act_isaac/checkpoints/last/pretrained_model
+```
+
+### Isaac 평가 녹화
+
+학습된 체크포인트로 Isaac을 돌리면서 평가 에피소드를 저장합니다.
 
 ```bash
 lerobot-record \
@@ -384,18 +436,6 @@ lerobot-record \
   --dataset.single_task="Pick the cube and place it in the box" \
   --dataset.num_episodes=10 \
   --dataset.push_to_hub=false \
-  --policy.path=outputs/train/act_isaac/checkpoints/last/pretrained_model
-```
-
-### 정책만 평가 (데이터 저장 없음)
-
-Isaac에서도 `lerobot-evaluate` 로 데이터 없이 정책만 돌릴 수 있습니다. 조작은 Piper와 같습니다 (Space 일시정지/재개, Esc 종료).
-
-```bash
-lerobot-evaluate \
-  --robot.type=isaac_follower \
-  --display_data=true \
-  --task="Pick the cube and place it in the box" \
   --policy.path=outputs/train/act_isaac/checkpoints/last/pretrained_model
 ```
 
