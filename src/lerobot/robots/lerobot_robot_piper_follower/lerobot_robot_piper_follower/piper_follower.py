@@ -89,10 +89,10 @@ class PiperFollower(Robot):
         time.sleep(0.025)
         self._is_connected = True # 연결 확인 시 true로 변경
         
-        # 카메라 연결
-        for cam in self.cameras.values():
+        for cam_key, cam in self.cameras.items():
             cam.connect()
-            cam.read()
+            logger.info("Connected camera %s (%s)", cam_key, cam)
+            time.sleep(0.2)
 
     @check_if_not_connected
     def get_observation(self) -> RobotObservation:
@@ -110,7 +110,7 @@ class PiperFollower(Robot):
         }
         
         for cam_key, cam in self.cameras.items():
-            obs_dict[cam_key] = cam.async_read()
+            obs_dict[cam_key] = cam.read_latest(max_age_ms=1000)
         
         return obs_dict
 

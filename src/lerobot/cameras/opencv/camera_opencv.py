@@ -165,6 +165,10 @@ class OpenCVCamera(Camera):
             )
 
         self._configure_capture_settings()
+        try:
+            self.videocapture.set(cv2.CAP_PROP_BUFFERSIZE, 1)
+        except Exception:
+            logger.debug("%s could not set CAP_PROP_BUFFERSIZE=1", self)
         self._start_read_thread()
 
         if warmup and self.warmup_s > 0:
@@ -374,8 +378,7 @@ class OpenCVCamera(Camera):
                 f"{self} read() color_mode parameter is deprecated and will be removed in future versions."
             )
 
-        if self.thread is None or not self.thread.is_alive():
-            raise RuntimeError(f"{self} read thread is not running.")
+        self._ensure_read_thread()
 
         self.new_frame_event.clear()
         frame = self.async_read(timeout_ms=10000)
@@ -455,11 +458,10 @@ class OpenCVCamera(Camera):
             except DeviceNotConnectedError:
                 break
             except Exception as e:
-                if failure_count <= 10:
-                    failure_count += 1
+                failure_count += 1
+                if failure_count <= 10 or failure_count % 50 == 0:
                     logger.warning(f"Error reading frame in background thread for {self}: {e}")
-                else:
-                    raise RuntimeError(f"{self} exceeded maximum consecutive read failures.") from e
+                time.sleep(0.05)
 
     def _start_read_thread(self) -> None:
         """Starts or restarts the background read thread if it's not running."""
@@ -470,6 +472,13 @@ class OpenCVCamera(Camera):
         self.thread.daemon = True
         self.thread.start()
         time.sleep(0.1)
+
+    def _ensure_read_thread(self) -> None:
+        """Restart the background read thread if it stopped unexpectedly."""
+        if self.thread is not None and self.thread.is_alive():
+            return
+        logger.warning(f"{self} read thread is not running. Restarting.")
+        self._start_read_thread()
 
     def _stop_read_thread(self) -> None:
         """Signals the background read thread to stop and waits for it to join."""
@@ -511,14 +520,22 @@ class OpenCVCamera(Camera):
             RuntimeError: If an unexpected error occurs.
         """
 
-        if self.thread is None or not self.thread.is_alive():
-            raise RuntimeError(f"{self} read thread is not running.")
+        self._ensure_read_thread()
 
         if not self.new_frame_event.wait(timeout=timeout_ms / 1000.0):
-            raise TimeoutError(
-                f"Timed out waiting for frame from camera {self} after {timeout_ms} ms. "
-                f"Read thread alive: {self.thread.is_alive()}."
-            )
+            thread_alive = self.thread is not None and self.thread.is_alive()
+            if thread_alive:
+                raise TimeoutError(
+                    f"Timed out waiting for frame from camera {self} after {timeout_ms} ms. "
+                    f"Read thread alive: {thread_alive}."
+                )
+            self._ensure_read_thread()
+            if not self.new_frame_event.wait(timeout=max(timeout_ms, 1000) / 1000.0):
+                thread_alive = self.thread is not None and self.thread.is_alive()
+                raise TimeoutError(
+                    f"Timed out waiting for frame from camera {self} after {timeout_ms} ms. "
+                    f"Read thread alive: {thread_alive}."
+                )
 
         with self.frame_lock:
             frame = self.latest_frame
@@ -546,21 +563,18 @@ class OpenCVCamera(Camera):
             RuntimeError: If the camera is connected but has not captured any frames yet.
         """
 
-        if self.thread is None or not self.thread.is_alive():
-            raise RuntimeError(f"{self} read thread is not running.")
+        self._ensure_read_thread()
 
         with self.frame_lock:
             frame = self.latest_frame
             timestamp = self.latest_timestamp
 
         if frame is None or timestamp is None:
-            raise RuntimeError(f"{self} has not captured any frames yet.")
+            return self.async_read(timeout_ms=max(max_age_ms, 1000))
 
         age_ms = (time.perf_counter() - timestamp) * 1e3
         if age_ms > max_age_ms:
-            raise TimeoutError(
-                f"{self} latest frame is too old: {age_ms:.1f} ms (max allowed: {max_age_ms} ms)."
-            )
+            return self.async_read(timeout_ms=max(max_age_ms, 200))
 
         return frame
 
