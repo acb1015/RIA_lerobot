@@ -254,6 +254,31 @@ lerobot-record \
   --policy.path=outputs/train/act_piper/checkpoints/last/pretrained_model
 ```
 
+### 정책만 평가 (데이터 저장 없음)
+
+학습된 체크포인트로 실기를 돌리기만 하고, 에피소드 파일은 만들지 않습니다.  
+시작은 **일시정지**입니다. 장면을 맞춘 뒤 Space로 정책을 시작하고, 다시 Space로 멈춥니다.
+
+| 키 | 동작 |
+| --- | --- |
+| Space | 일시정지 ↔ 재개 (재개 시 정책 액션 큐를 리셋) |
+| Esc / Ctrl+C | 종료 |
+
+실행 전에 `can_number` 인터페이스가 `UP` 인지 확인합니다. (`bash can_activate.sh can0 1000000`)
+
+```bash
+lerobot-evaluate \
+  --robot.type=piper_follower \
+  --robot.port=can_number \
+  --robot.cameras="{ front: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}, top: {type: opencv, index_or_path: camera_number, width: 640, height: 480, fps: 30}}" \
+  --display_data=true \
+  --task="Pick the cube and place it in the box" \
+  --policy.path=outputs/train/act_piper/checkpoints/last/pretrained_model
+```
+
+바로 움직이게 하려면 `--start_paused=false` 를 붙입니다.  
+카메라가 `Timed out waiting for frame` 로 끊기면 각 카메라에 `fourcc: MJPG` 를 넣습니다.
+
 ---
 
 ## Isaac Sim (ROS 2)
@@ -359,6 +384,18 @@ lerobot-record \
   --dataset.single_task="Pick the cube and place it in the box" \
   --dataset.num_episodes=10 \
   --dataset.push_to_hub=false \
+  --policy.path=outputs/train/act_isaac/checkpoints/last/pretrained_model
+```
+
+### 정책만 평가 (데이터 저장 없음)
+
+Isaac에서도 `lerobot-evaluate` 로 데이터 없이 정책만 돌릴 수 있습니다. 조작은 Piper와 같습니다 (Space 일시정지/재개, Esc 종료).
+
+```bash
+lerobot-evaluate \
+  --robot.type=isaac_follower \
+  --display_data=true \
+  --task="Pick the cube and place it in the box" \
   --policy.path=outputs/train/act_isaac/checkpoints/last/pretrained_model
 ```
 
